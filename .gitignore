@@ -1,0 +1,21 @@
+# Obsidian runtime
+.obsidian/workspace*
+.obsidian/cache*
+
+# OS and temporary files
+.DS_Store
+Thumbs.db
+*.tmp
+*.log
+
+# Sensitive environments
+.env
+.env.*
+!.env.example
+
+# ai-memory runtime & derived artifacts
+db/
+models/
+*.sqlite*
+*.sqlite-wal
+*.sqlite-shm
