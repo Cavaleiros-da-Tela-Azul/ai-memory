@@ -10,8 +10,7 @@ Este repositório é a fonte da verdade da organização e integra a **Cadeia do
 
 * [[_rules/CONST-001-constitution|📜 CONST-001: Constituição da Organização]] — A autoridade máxima e regras inegociáveis.
 * [[_rules/README|📏 Regras e Restrições (_rules)]] — Diretrizes mandatórias locais.
-* [[decisions/0001-arquitetura-contratos-sdd|⚖️ ADR-001: Adoção da Arquitetura SDD]] — Justificativa e trade-offs da esteira híbrida.
-* [[decisions/README|🏛️ Decisões de Arquitetura (decisions)]] — Registro de decisões (ADRs) com justificativas.
+* [[decisions/README|⚖️ Decisões de Arquitetura (ADRs 000 a 005)]] — Decisões técnicas fundamentadas do CineFood.
 * [[concepts/README|💡 Conceitos de Domínio (concepts)]] — Glossário, arquitetura e modelos de negócio.
 * [[procedures/README|📋 Procedimentos e Guias (procedures)]] — Playbooks, fluxos de deploy e guias operacionais.
 * [[gotchas/README|⚠️ Armadilhas e Gotchas (gotchas)]] — Bugs conhecidos e armadilhas evitadas.
@@ -21,7 +20,7 @@ Este repositório é a fonte da verdade da organização e integra a **Cadeia do
 
 ## 📂 Projetos Ativos
 
-* [[projects/cinefood/PROD-001-cinefood|🍿 CineFood (PROD-001)]] — Sistema de autoatendimento e delivery para cinemas.
+* [[projects/cinefood/PROD-001-cinefood|🍿 PROD-001: CineFood]] — Plataforma integrada de cinema e cantina (conforme Manual de Processos v2.0 / ISO 12207).
 
 ---
 
