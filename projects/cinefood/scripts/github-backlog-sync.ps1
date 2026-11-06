@@ -13,6 +13,9 @@ if (-not $script:GitHubToken) {
 if (-not $script:GitHubToken) {
   $script:GitHubToken = $env:GITHUB_TOKEN
 }
+if (-not $script:GitHubToken) {
+  $script:GitHubToken = $env:GH_TOKEN
+}
 
 $script:Repo = "Cavaleiros-da-Tela-Azul/cinefood"
 $script:Headers = @{
@@ -55,19 +58,33 @@ function Add-IssueToKanbanProject(
   [string]$KanbanStatus = "Backlog",
   [string]$IterationId = $script:Iteration1Id
 ) {
-  # 1. Adiciona a Issue ao Project #1
-  $addRes = Invoke-GitHubGraphQL "mutation { addProjectV2ItemById(input: { projectId: `"$script:ProjectId`", contentId: `"$IssueNodeId`" }) { item { id } } }"
-  $itemId = $addRes.data.addProjectV2ItemById.item.id
+  try {
+    # 1. Adiciona a Issue ao Project #1
+    $addRes = Invoke-GitHubGraphQL "mutation { addProjectV2ItemById(input: { projectId: `"$script:ProjectId`", contentId: `"$IssueNodeId`" }) { item { id } } }"
+    if ($addRes.errors) {
+      Write-Warning "Aviso GraphQL ao vincular Issue ao Kanban Project #1: $($addRes.errors[0].message)"
+      return $null
+    }
+    $itemId = $addRes.data.addProjectV2ItemById.item.id
+    if (-not $itemId) {
+      Write-Warning "Item ID não retornado para o contentId $IssueNodeId no Project #1."
+      return $null
+    }
 
-  # 2. Define a coluna do Kanban (Status)
-  $statusOptionId = $script:StatusOptions[$KanbanStatus]
-  if (-not $statusOptionId) { $statusOptionId = $script:StatusOptions["Backlog"] }
-  Invoke-GitHubGraphQL "mutation { updateProjectV2ItemFieldValue(input: { projectId: `"$script:ProjectId`", itemId: `"$itemId`", fieldId: `"$script:StatusFieldId`", value: { singleSelectOptionId: `"$statusOptionId`" } }) { projectV2Item { id } } }" | Out-Null
+    # 2. Define a coluna do Kanban (Status)
+    $statusOptionId = $script:StatusOptions[$KanbanStatus]
+    if (-not $statusOptionId) { $statusOptionId = $script:StatusOptions["Backlog"] }
+    Invoke-GitHubGraphQL "mutation { updateProjectV2ItemFieldValue(input: { projectId: `"$script:ProjectId`", itemId: `"$itemId`", fieldId: `"$script:StatusFieldId`", value: { singleSelectOptionId: `"$statusOptionId`" } }) { projectV2Item { id } } }" | Out-Null
 
-  # 3. Vincula à Iteration 1 para aparecer imediatamente na View 1 ("Current iteration")
-  Invoke-GitHubGraphQL "mutation { updateProjectV2ItemFieldValue(input: { projectId: `"$script:ProjectId`", itemId: `"$itemId`", fieldId: `"$script:IterationFieldId`", value: { iterationId: `"$IterationId`" } }) { projectV2Item { id } } }" | Out-Null
+    # 3. Vincula à Iteration 1 para aparecer imediatamente na View 1 ("Current iteration")
+    Invoke-GitHubGraphQL "mutation { updateProjectV2ItemFieldValue(input: { projectId: `"$script:ProjectId`", itemId: `"$itemId`", fieldId: `"$script:IterationFieldId`", value: { iterationId: `"$IterationId`" } }) { projectV2Item { id } } }" | Out-Null
 
-  return $itemId
+    return $itemId
+  }
+  catch {
+    Write-Warning "Exceção ao vincular ao Kanban Project #1: $($_.Exception.Message)"
+    return $null
+  }
 }
 
 function New-CineFoodIssue(
@@ -88,6 +105,59 @@ function New-CineFoodIssue(
   $created = Invoke-RestMethod -Method Post -Uri "https://api.github.com/repos/$script:Repo/issues" -Headers $script:Headers -Body $bytes -ContentType "application/json; charset=utf-8"
 
   $projectItemId = Add-IssueToKanbanProject -IssueNodeId $created.node_id -KanbanStatus $KanbanStatus
-  Write-Output "Issue #$($created.number) criada e adicionada ao Kanban ($KanbanStatus / Iteration 1): $($created.title) [ProjectItem: $projectItemId]"
+  if ($projectItemId) {
+    Write-Output "Issue #$($created.number) criada e adicionada ao Kanban ($KanbanStatus / Iteration 1): $($created.title) [ProjectItem: $projectItemId]"
+  } else {
+    Write-Output "Issue #$($created.number) criada no Milestone #$($MilestoneNumber): $($created.title) [NodeId: $($created.node_id)]"
+  }
   return $created
 }
+
+function Sync-AllIssuesToKanbanProject(
+  [string]$PersonalAccessToken = $script:GitHubToken,
+  [string]$KanbanStatus = "Ready"
+) {
+  if ($PersonalAccessToken) {
+    $script:Headers["Authorization"] = "Bearer $PersonalAccessToken"
+  }
+
+  $issueNodeIds = @(
+    "I_kwDOVg0CMc8AAAABc64R1A", # Issue #1
+    "I_kwDOVg0CMc8AAAABc64SVQ", # Issue #2
+    "I_kwDOVg0CMc8AAAABc64S3A", # Issue #3
+    "I_kwDOVg0CMc8AAAABc64TZQ", # Issue #4
+    "I_kwDOVg0CMc8AAAABc64UAQ", # Issue #5
+    "I_kwDOVg0CMc8AAAABc64UoA", # Issue #6
+    "I_kwDOVg0CMc8AAAABc68N2g", # Issue #7
+    "I_kwDOVg0CMc8AAAABc7TkEQ", # Issue #8
+    "I_kwDOVg0CMc8AAAABc7Tlkw", # Issue #9
+    "I_kwDOVg0CMc8AAAABc7TnIw", # Issue #10
+    "I_kwDOVg0CMc8AAAABc7ToXQ", # Issue #11
+    "I_kwDOVg0CMc8AAAABc7Tp4Q", # Issue #12
+    "I_kwDOVg0CMc8AAAABc7TrKw", # Issue #13
+    "I_kwDOVg0CMc8AAAABc7Ts0A", # Issue #14
+    "I_kwDOVg0CMc8AAAABc7Tudg", # Issue #15
+    "I_kwDOVg0CMc8AAAABc7TwFQ", # Issue #16
+    "I_kwDOVg0CMc8AAAABc7TxYg", # Issue #17
+    "I_kwDOVg0CMc8AAAABc7Tyxg", # Issue #18
+    "I_kwDOVg0CMc8AAAABc7T0JQ", # Issue #19
+    "I_kwDOVg0CMc8AAAABc7T1wQ", # Issue #20
+    "I_kwDOVg0CMc8AAAABc7T3Vg", # Issue #21
+    "I_kwDOVg0CMc8AAAABc7T4qg", # Issue #22
+    "I_kwDOVg0CMc8AAAABc7T55g", # Issue #23
+    "I_kwDOVg0CMc8AAAABc7T7eA"  # Issue #24
+  )
+
+  $count = 0
+  foreach ($nodeId in $issueNodeIds) {
+    $count++
+    $itemId = Add-IssueToKanbanProject -IssueNodeId $nodeId -KanbanStatus $KanbanStatus
+    if ($itemId) {
+      Write-Output "[$count/$($issueNodeIds.Count)] Issue $nodeId sincronizada no Kanban Project #1 [Item: $itemId]"
+    } else {
+      Write-Warning "[$count/$($issueNodeIds.Count)] Issue $nodeId não sincronizada no Kanban Project #1"
+    }
+    Start-Sleep -Milliseconds 300
+  }
+}
+
