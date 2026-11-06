@@ -124,3 +124,13 @@ Em conformidade com a ADR-001 (Monólito Modular):
 4. **MAR-04 (S14–S18 / Cantina e Gestão):** `RF-07`, `RF-08`, `RF-09`, `RF-10`, `RF-12`, `RF-15`, `RF-18` (`CMP-03`, `CMP-05`, `CMP-06`).
 5. **MAR-05 (S19–S22 / Verificação Integrada):** Homologação dos RNFs (`RNF-01` a `RNF-06`) e suíte de regressão ponta a ponta (`v1.0.0-rc.1`).
 6. **MAR-06 (S23–S24 / Transição e Piloto):** Implantação assistida na unidade piloto e encerramento com aceite operacional (`v1.0.0`).
+
+---
+
+## 7. Automação de Backlog e Sincronização com GitHub Project Kanban
+
+* **Quadro Kanban Oficial:** [Current iteration · @Matheus-slvmr's untitled project](https://github.com/orgs/Cavaleiros-da-Tela-Azul/projects/1/views/1) (`ProjectId: PVT_kwDOFKkS8M4BqZhD`, `Iteration 1: 381c7c80`).
+* **Regra de Governança:** Toda Issue criada no repositório `Cavaleiros-da-Tela-Azul/cinefood` DEVE ser vinculada automaticamente ao Project #1 na `Iteration 1` para exibição imediata no Kanban.
+* **Script e Guia Oficial de Handover:**
+  * Guia: `ai-memory/projects/cinefood/GITHUB-KANBAN-HANDOVER.md`
+  * Script PowerShell (`New-CineFoodIssue` + `Add-IssueToKanbanProject`): `ai-memory/projects/cinefood/scripts/github-backlog-sync.ps1`
