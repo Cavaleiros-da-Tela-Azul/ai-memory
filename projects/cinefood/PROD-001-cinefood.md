@@ -108,6 +108,13 @@ Em conformidade com a ADR-001 (Monólito Modular):
 * **RST-03 (Homologação e Sandbox):** Até a homologação oficial com contratante e adquirente, os pagamentos operam estritamente em sandbox e os dados são fictícios.
 * **RST-04 (Entrega no Assento Vinculada):** A entrega na sala escura exige ingresso próprio, válido e entrada física previamente confirmada na portaria.
 
+### Regras de Negócio Refinadas (Ideias Extras / OpenSpec Explore):
+* **RN-01 (Pix Tardio vs Expiração de 10 min):** Se o webhook de confirmação do pagamento chegar após a expiração da reserva de 10 minutos e o assento já tiver sido alocado a outro comprador, a nova reserva prevalece e o sistema dispara estorno automático no gateway com aviso no histórico (`RF-03`, `RF-04`, `ADR-002`).
+* **RN-02 (Gatilho de Preparo Sincronizado à Portaria):** Pedidos com `ENTREGA_ASSENTO` permanecem em `AGUARDANDO_CHEGADA` no KDS até que o QR Code do ingresso vinculado seja validado na portaria (`RF-06`), quando transitam automaticamente para `EM_PREPARO` (`RF-09`, `RST-04`).
+* **RN-03 / RF-20 (Ocorrência do Runner na Sala Escura):** Caso o runner não localize o cliente na poltrona em até 2 minutos ou haja impedimento na sala, ele registra a ocorrência e converte o pedido para `RETIRADA_NO_BALCAO`, notificando o cliente no histórico (`RF-09`).
+* **RN-04 (Janela de Corte de Cancelamento CDC):** Reembolso integral por arrependimento em até 7 dias da compra desde que solicitado até **2 horas antes do início da sessão** e com ingresso não utilizado (`status != UTILIZADO`) ou pedido ainda fora de `EM_PREPARO` (`RF-12`).
+* **RN-05 (Esteira Guiada de Checkout Duplo):** Transações de ingresso e cantina são independentes no backend (`ADR-005`), mas a UI encadeia o convite de compra de alimentos logo após a emissão do ingresso já pré-vinculando o `ingresso_id` e a poltrona.
+
 ---
 
 ## 6. Mapeamento de Marcos de Desenvolvimento (MAR-01 a MAR-06)
